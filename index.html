@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fitness Login + Calculators</title>
+
+<style>
+/* ----------- GLOBAL RESET ----------- */
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial, sans-serif;}
+
+/* ----------- LOGIN PAGE BACKGROUND ----------- */
+body{
+  min-height:100vh;
+  background:url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1950&q=80') center/cover no-repeat;
+  position:relative;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+body::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.55);
+}
+
+/* ----------- LOGIN BOX ----------- */
+.login-box{
+  width:360px;
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(18px);
+  padding:35px 30px;
+  border-radius:20px;
+  text-align:center;
+  border:1px solid rgba(255,255,255,0.2);
+  animation:fadeIn .5s ease;
+  position:relative;
+  z-index:2;
+}
+@keyframes fadeIn { from{opacity:0; transform:scale(.9);} to{opacity:1; transform:scale(1);} }
+
+h2{
+  color:white;
+  margin-bottom:20px;
+  font-size:28px;
+  letter-spacing:1px;
+}
+
+input{
+  width:100%;
+  padding:13px;
+  margin:10px 0;
+  border:none;
+  border-radius:10px;
+  background:rgba(255,255,255,0.18);
+  color:white;
+  font-size:16px;
+}
+input::placeholder{ color:#eee; }
+
+.btn{
+  width:100%;
+  padding:13px;
+  margin-top:15px;
+  border:none;
+  border-radius:10px;
+  background:#1a73e8;
+  color:white;
+  font-size:17px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.25s;
+}
+.btn:hover{ background:#145bb5; }
+.guest{ margin-top:12px; background:#444; }
+
+.switch{
+  color:#fff;
+  margin-top:12px;
+  cursor:pointer;
+  text-decoration:underline;
+}
+
+/* ----------- SUCCESS POPUP ----------- */
+.success-box{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.75);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  border-radius:20px;
+  opacity:0;
+  pointer-events:none;
+  transition:.3s;
+}
+.success-box.show{
+  opacity:1;
+  pointer-events:auto;
+}
+.success-inner{
+  background:white;
+  color:black;
+  padding:30px;
+  border-radius:18px;
+  text-align:center;
+  animation:pop .5s ease;
+}
+@keyframes pop {
+  0%{ transform:scale(0.5); opacity:0; }
+  100%{ transform:scale(1); opacity:1; }
+}
+.check{
+  font-size:60px;
+  color:#00c78b;
+  font-weight:bold;
+}
+
+/* ----------- CALCULATORS PAGE ----------- */
+#calculators {
+  display:none;
+  width:100%;
+  padding:30px 0;
+  overflow:auto;
+}
+
+.container{
+  max-width:1200px;
+  width:90%;
+  padding:20px;
+  margin:auto;
+  position:relative;
+  z-index:5;
+}
+
+h1{
+  text-align:center;
+  margin-bottom:30px;
+  color:white;
+  text-shadow:0 0 10px rgba(0,0,0,0.7);
+}
+
+.grid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:20px;
+  justify-content:center;
+}
+
+.card{
+  background:rgba(255,255,255,0.1);
+  backdrop-filter:blur(12px);
+  border-radius:20px;
+  padding:25px;
+  flex:1 1 300px;
+  min-width:280px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.6);
+  transition:all 0.3s;
+  color:white;
+}
+.card:hover{
+  transform:translateY(-10px);
+  box-shadow:0 12px 35px rgba(0,0,0,0.8);
+}
+.card h3{
+  margin-bottom:15px;
+  text-align:center;
+  text-shadow:0 0 5px rgba(0,0,0,0.5);
+}
+
+input, select{
+  width:100%;
+  padding:12px 15px;
+  margin:10px 0;
+  border:none;
+  border-radius:10px;
+  background:rgba(255,255,255,0.2);
+  color:#fff;
+  font-size:16px;
+}
+input::placeholder{color:rgba(255,255,255,0.7);}
+
+button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  background:#1a73e8;
+  color:white;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:all 0.3s;
+}
+button:hover{
+  background:#155ab6;
+  transform:scale(1.05);
+}
+
+.result{
+  margin-top:10px;
+  font-weight:bold;
+  color:#00ffff;
+  text-align:center;
+  text-shadow:0 0 8px rgba(0,0,0,0.7);
+}
+
+</style>
+</head>
+<body>
+
+<!-- ----------------------- LOGIN PAGE ----------------------- -->
+<div class="login-box" id="box">
+
+  <div class="success-box" id="successBox">
+    <div class="success-inner">
+      <div class="check">✔</div>
+      <h2 id="successText">Success!</h2>
+    </div>
+  </div>
+
+  <!-- Login -->
+  <div id="loginPage">
+    <h2>Login</h2>
+    <input type="text" id="loginUser" placeholder="Username">
+    <input type="password" id="loginPass" placeholder="Password">
+    <button class="btn" onclick="login()">Login</button>
+    <button class="btn guest" onclick="guest()">Continue as Guest</button>
+    <div class="switch" onclick="showSignup()">Don't have an account? Sign Up</div>
+  </div>
+
+  <!-- Signup -->
+  <div id="signupPage" style="display:none;">
+    <h2>Create Account</h2>
+    <input type="text" id="signUser" placeholder="Username">
+    <input type="password" id="signPass" placeholder="Password">
+    <input type="password" id="signConfirm" placeholder="Confirm Password">
+    <button class="btn" onclick="signup()">Create Account</button>
+    <div class="switch" onclick="showLogin()">Already have an account? Login</div>
+  </div>
+
+</div>
+
+<!-- ----------------------- CALCULATORS PAGE ----------------------- -->
+<div id="calculators">
+<div class="container">
+<h1>Health & Fitness Calculators Pro</h1>
+<div class="grid">
+
+  <!-- BMI -->
+  <div class="card">
+    <h3>BMI Calculator</h3>
+    <input type="number" id="bmiWeight" placeholder="Weight (kg)">
+    <input type="number" id="bmiHeight" placeholder="Height (cm)">
+    <button onclick="calculateBMI()">Calculate BMI</button>
+    <div class="result" id="bmiResult"></div>
+  </div>
+
+  <!-- Calories -->
+  <div class="card">
+    <h3>Calorie Calculator</h3>
+    <input type="number" id="calWeight" placeholder="Weight (kg)">
+    <input type="number" id="calHeight" placeholder="Height (cm)">
+    <input type="number" id="calAge" placeholder="Age">
+    <select id="calGender">
+      <option value="">Select Gender</option>
+      <option value="male">Male</option>
+      <option value="female">Female</option>
+    </select>
+    <select id="calActivity">
+      <option value="">Activity Level</option>
+      <option value="1.2">Sedentary</option>
+      <option value="1.375">Lightly Active</option>
+      <option value="1.55">Moderately Active</option>
+      <option value="1.725">Very Active</option>
+      <option value="1.9">Extra Active</option>
+    </select>
+    <select id="calSport">
+      <option value="">Choose Sport</option>
+      <option value="0.05">Running</option>
+      <option value="0.06">Cycling</option>
+      <option value="0.04">Swimming</option>
+      <option value="0.06">Weightlifting</option>
+      <option value="0.03">Yoga</option>
+      <option value="0.05">Badminton</option>
+      <option value="0.05">Cricket</option>
+    </select>
+    <input type="number" id="calHours" placeholder="Hours per day (for sport)">
+    <button onclick="calculateCalories()">Calculate Calories</button>
+    <div class="result" id="calResult"></div>
+  </div>
+
+  <!-- Water -->
+  <div class="card">
+    <h3>Water Intake</h3>
+    <input type="number" id="waterWeight" placeholder="Weight (kg)">
+    <button onclick="calculateWater()">Calculate Water Intake</button>
+    <div class="result" id="waterResult"></div>
+  </div>
+
+  <!-- Body Fat -->
+  <div class="card">
+    <h3>Body Fat %</h3>
+    <input type="number" id="bfWeight" placeholder="Weight (kg)">
+    <input type="number" id="bfWaist" placeholder="Waist (cm)">
+    <select id="bfGender">
+      <option value="">Select Gender</option>
+      <option value="male">Male</option>
+      <option value="female">Female</option>
+    </select>
+    <button onclick="calculateBodyFat()">Calculate Body Fat</button>
+    <div class="result" id="bfResult"></div>
+  </div>
+
+  <!-- Macro -->
+  <div class="card">
+    <h3>Macro Calculator</h3>
+    <input type="number" id="macroCalories" placeholder="Calories per day">
+    <input type="number" id="macroProtein" placeholder="Protein %">
+    <input type="number" id="macroCarbs" placeholder="Carbs %">
+    <input type="number" id="macroFat" placeholder="Fat %">
+    <button onclick="calculateMacros()">Calculate Macros</button>
+    <div class="result" id="macroResult"></div>
+  </div>
+
+</div>
+</div>
+</div>
+
+<script>
+// Switch login/signup screens
+function showSignup(){ loginPage.style.display="none"; signupPage.style.display="block"; }
+function showLogin(){ signupPage.style.display="none"; loginPage.style.display="block"; }
+
+// Success animation + page switch
+function showSuccess(msg){
+  successText.innerText=msg;
+  successBox.classList.add("show");
+  setTimeout(()=>{
+    successBox.classList.remove("show");
+    document.getElementById("box").style.display="none";
+    document.getElementById("calculators").style.display="block";
+    document.body.style.alignItems="flex-start";
+  },1200);
+}
+
+// Login
+function login(){
+  if(!loginUser.value || !loginPass.value){ alert("Enter details"); return; }
+  showSuccess("Login Successful!");
+}
+
+// Signup
+function signup(){
+  if(!signUser.value || !signPass.value || !signConfirm.value){ alert("Fill all fields"); return; }
+  if(signPass.value !== signConfirm.value){ alert("Passwords do not match"); return; }
+  showSuccess("Account Created!");
+}
+
+// Guest
+function guest(){ showSuccess("Logged in as Guest!"); }
+
+/* --------- CALCULATOR FUNCTIONS --------- */
+function calculateBMI(){
+  let w=parseFloat(bmiWeight.value);
+  let h=parseFloat(bmiHeight.value)/100;
+  if(w&&h){
+    let bmi=(w/(h*h)).toFixed(1);
+    let cat=bmi<18.5?'Underweight':bmi<25?'Normal':bmi<30?'Overweight':'Obese';
+    bmiResult.innerText=`BMI: ${bmi} (${cat})`;
+  }
+}
+
+function calculateCalories(){
+  let w=parseFloat(calWeight.value),
+      h=parseFloat(calHeight.value),
+      age=parseFloat(calAge.value),
+      gender=calGender.value,
+      act=parseFloat(calActivity.value),
+      sport=parseFloat(calSport.value)||0,
+      hrs=parseFloat(calHours.value)||0;
+
+  if(w&&h&&age&&gender&&act){
+    let bmr = gender==='male'
+      ? 88.362+(13.397*w)+(4.799*h)-(5.677*age)
+      : 447.593+(9.247*w)+(3.098*h)-(4.330*age);
+    calResult.innerText="Calories: "+Math.round(bmr*act*(1+sport*hrs))+" kcal/day";
+  }
+}
+
+function calculateWater(){
+  let w=parseFloat(waterWeight.value);
+  if(w) waterResult.innerText="Water: "+(w*0.033).toFixed(2)+" L/day";
+}
+
+function calculateBodyFat(){
+  let waist=parseFloat(bfWaist.value),
+      gender=bfGender.value;
+  if(waist&&gender){
+    let bf = gender==='male'
+      ? (495/(1.0324-0.19077*Math.log10(waist))-450)
+      : (495/(1.29579-0.35004*Math.log10(waist))+0.221)-450;
+    bfResult.innerText="Body Fat: "+bf.toFixed(1)+"%";
+  }
+}
+
+function calculateMacros(){
+  let cal=parseFloat(macroCalories.value),
+      p=parseFloat(macroProtein.value)/100,
+      c=parseFloat(macroCarbs.value)/100,
+      f=parseFloat(macroFat.value)/100;
+
+  if(cal&&(p+c+f<=1)){
+    macroResult.innerText=
+      `Protein: ${Math.round(cal*p/4)} kcal, Carbs: ${Math.round(cal*c/4)} kcal, Fat: ${Math.round(cal*f/9)} kcal`;
+  }
+}
+</script>
+
+</body>
+</html>
